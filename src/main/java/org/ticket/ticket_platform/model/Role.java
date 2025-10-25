@@ -1,5 +1,6 @@
 package org.ticket.ticket_platform.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ public class Role {
     private Integer id;
 
     @NotNull
+    @Column(unique=true)
     private String name;
 
     public Integer getId() {
@@ -28,6 +30,7 @@ public class Role {
     public void setName(String name) {
         this.name = name;
     }
+    
 
     
 }

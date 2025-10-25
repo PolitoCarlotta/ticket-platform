@@ -22,10 +22,6 @@ public class Note {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull
-    @Column(nullable = false)
-    private String author;
-
     private LocalDate creationdate= LocalDate.now();
 
     @NotNull
@@ -35,6 +31,10 @@ public class Note {
     @JoinColumn(name="ticket_id", nullable=false)
     @JsonBackReference
     private Ticket ticket;
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User author;
 
 
     public Ticket getTicket() {
@@ -53,14 +53,6 @@ public class Note {
         this.id = id;
     }
 
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
     public LocalDate getCreationdate() {
         return creationdate;
     }
@@ -75,5 +67,13 @@ public class Note {
 
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
     }
 }
