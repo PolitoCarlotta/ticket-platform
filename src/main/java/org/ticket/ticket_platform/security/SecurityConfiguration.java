@@ -16,7 +16,7 @@ public class SecurityConfiguration {
         http.authorizeHttpRequests()
         .requestMatchers().hasAutority("ADMIN")
         .requestMatchers().hasAutority("ADMIN")
-        .requestMatchers().hasAnyAuthority("USER", "ADMIN")
+        .requestMatchers("tickets/**").hasAnyAuthority("USER", "ADMIN")
         .requestMatchers("/**").permitAll()
         .and().formLogin()
         .and().logout()

@@ -30,6 +30,7 @@ public class Ticket {
 
     @NotNull
     @NotBlank
+    @Column(unique=true)
     private String title;
 
     @Column(updatable=false)
