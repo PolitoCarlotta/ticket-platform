@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/notes")
-public class noteController {
+public class NoteController {
 
     @Autowired
     private NoteRepository noteRepository;
