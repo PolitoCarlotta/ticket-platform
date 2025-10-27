@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
+    <title>Navbar</title>
+</head>
+
+<body>
+
+<nav th:fragment="navbar(current)"
+     class="navbar navbar-expand-lg navbar-dark bg-dark p-3 border-bottom border-body">
+    <div class="container-fluid">
+
+        <!-- BRAND -->
+        <a th:href="@{/tickets}" class="navbar-brand d-flex align-items-center">
+            Ticket
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                 fill="currentColor" class="bi bi-hammer ms-2" viewBox="0 0 16 16">
+                <path
+                    d="M9.972 2.508a.5.5 0 0 0-.16-.556l-.178-.129a5 5 0 0 0-2.076-.783C6.215.862 4.504 1.229 2.84 3.133H1.786a.5.5 0 0 0-.354.147L.146 4.567a.5.5 0 0 0 0 .706l2.571 2.579a.5.5 0 0 0 .708 0l1.286-1.29a.5.5 0 0 0 .146-.353V5.57l8.387 8.873A.5.5 0 0 0 14 14.5l1.5-1.5a.5.5 0 0 0 .017-.689l-9.129-8.63c.747-.456 1.772-.839 3.112-.839a.5.5 0 0 0 .472-.334" />
+            </svg>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link px-2"
+                        th:href="@{/tickets}"
+                        th:classappend="${current}=='tickets' ? ' active' : ''">
+                        Tickets
+                    </a>
+                </li>
+
+                <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
+                    <a class="nav-link px-2"
+                        th:href="@{/categories}"
+                        th:classappend="${current}=='categories' ? ' active' : ''">
+                        Categories
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false" th:classappend="${current}=='profile' ? ' active' : ''">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span sec:authentication="name" >Utente</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li>
+                            <span class="dropdown-item-text">
+                                Ruolo: <span sec:authentication="principal.authorities"></span>
+                            </span>
+                        </li>
+                        <li><a class="dropdown-item" th:href="@{/profile}">Profilo</a></li>
+                        <li sec:authorize="hasAuthority('ADMIN')">
+                            <a class="dropdown-item" th:href="@{/profile/create-operator}">Crea Operator</a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+<!-- Bootstrap Bundle -->
+<script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

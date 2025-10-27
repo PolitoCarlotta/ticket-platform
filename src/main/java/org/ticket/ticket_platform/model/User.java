@@ -5,6 +5,8 @@ import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -18,17 +20,18 @@ import jakarta.validation.constraints.NotNull;
 public class User {
 
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
 
     @Email
     @NotNull
     @NotBlank
-    @Column(unique=true, nullable=false)
+    @Column(unique=true, nullable=false, updatable=false)
     private String email;
 
     @NotNull
     @NotBlank
-    @Column(nullable=false)
+    @Column(nullable=false, updatable=false)
     private String password;
 
     @NotBlank
@@ -36,8 +39,10 @@ public class User {
     private String name;
 
     @Column(nullable=false)
-    private boolean flag = false;
+    private boolean flag;
   
+    @OneToMany(mappedBy = "operator", fetch = FetchType.LAZY)
+    private List<Ticket> tickets;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -93,6 +98,14 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<Ticket> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = tickets;
     }
 
 

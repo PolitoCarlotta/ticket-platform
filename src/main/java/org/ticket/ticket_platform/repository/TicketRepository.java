@@ -16,5 +16,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer>{
 
     public List<Ticket> findByStatus(TicketStatus status);
 
+    public List<Ticket> findByOperatorEmail(String email);
+
+    public List<Ticket> findByOperatorEmailAndTitleContainingIgnoreCase(String email, String keyword);
+
 
 }

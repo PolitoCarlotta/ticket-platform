@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Dashboard</title>
+    <link th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" rel="stylesheet"/>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav th:replace="~{fragments/navbar :: navbar('tickets')}"></nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Tickets</h2>
+
+        <!-- Pulsante "Nuovo Ticket" visibile solo per ADMIN -->
+        <div sec:authorize="hasAuthority('ADMIN')">
+            <a th:href="@{/tickets/create}" class="btn btn-success">+ New Ticket</a>
+        </div>
+    </div>
+
+    <!-- Form di ricerca -->
+    <form class="input-group mb-4" method="get" th:action="@{/tickets}">
+        <input type="text" name="keyword" th:value="${param.keyword}" class="form-control" placeholder="Cerca per titolo">
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+    </form>
+
+    <!-- Messaggio di successo (flash attribute) -->
+    <div class="row">
+        <div class="col-6">
+            <th:block th:if="${successMessage != null}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Tabella dei tickets -->
+    <div th:if="${#lists.isEmpty(list)}">
+        <div class="alert alert-warning">No tickets found.</div>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(list)}">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Operator</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ticket : ${list}">
+                    <td th:text="${ticket.title}"></td>
+                    <td>
+                        <span th:each="cat : ${ticket.categories}"
+                            th:text="${cat.category}"
+                            th:append="${!${catStat.last}} ? ', ' : ''"
+                            th:remove="tag"></span>
+                    </td>
+                    <td>
+                        <span th:class="${ticket.status == 'COMPLETED' ? 'badge bg-success' :
+                                        (ticket.status == 'IN_PROGRESS' ? 'badge bg-warning' : 'badge bg-secondary')}"
+                            th:text="${ticket.status}">
+                        </span>
+                    </td>
+                    <td th:text="${ticket.operator != null ? ticket.operator.name : 'Unassigned'}"></td>
+                    <td th:text="${#temporals.format(ticket.creationDate, 'dd/MM/yyyy')}"></td>
+                    
+                    <td>
+                        <!-- Tutti possono vedere il dettaglio -->
+                        <a th:href="@{/tickets/show/{id}(id=${ticket.id})}" class="btn btn-sm btn-primary">View</a>
+
+                        <!-- Solo admin può modificare o eliminare -->
+                        <a sec:authorize="hasAuthority('ADMIN')"
+                           th:href="@{/tickets/edit/{id}(id=${ticket.id})}"
+                           class="btn btn-sm btn-warning">Edit</a>
+
+                        <form sec:authorize="hasAuthority('ADMIN')"
+                              th:action="@{/tickets/delete/{id}(id=${ticket.id})}"
+                              method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+
+                        <!-- Solo operator può aggiornare lo stato o aggiungere note -->
+                        <a sec:authorize="hasAuthority('OPERATOR')"
+                           th:href="@{/tickets/show/{id}(id=${ticket.id})}#notes"
+                           class="btn btn-sm btn-outline-secondary">Add Note</a>
+
+                        <a sec:authorize="hasAuthority('OPERATOR')"
+                           th:href="@{/tickets/update-status/{id}(id=${ticket.id})}"
+                           class="btn btn-sm btn-outline-info">Update Status</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

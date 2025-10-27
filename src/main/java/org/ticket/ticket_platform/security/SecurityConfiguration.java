@@ -18,7 +18,9 @@ public class SecurityConfiguration {
         .requestMatchers("/tickets/create", "/tickets/edit").hasAuthority("ADMIN")
         .requestMatchers(HttpMethod.POST, "/tickets/**").hasAuthority("ADMIN")
         .requestMatchers("/categories", "/categories/**").hasAuthority("ADMIN")
-        .requestMatchers("/tickets","/tickets/**").hasAnyAuthority("USER", "ADMIN")
+        .requestMatchers("/profile/create-operator/**").hasAuthority("ADMIN")
+
+        .requestMatchers("/tickets","/tickets/**").hasAnyAuthority("OPERATOR", "ADMIN")
         .requestMatchers("/**").permitAll()
         .and().formLogin()
         .and().logout()

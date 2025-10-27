@@ -16,11 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.ticket.ticket_platform.model.Category;
 import org.ticket.ticket_platform.model.Note;
 import org.ticket.ticket_platform.model.Ticket;
+import org.ticket.ticket_platform.model.User;
 import org.ticket.ticket_platform.repository.CategoryRepository;
 import org.ticket.ticket_platform.repository.NoteRepository;
 import org.ticket.ticket_platform.repository.TicketRepository;
+import org.ticket.ticket_platform.repository.UserRepository;
 
 import jakarta.validation.Valid;
 
@@ -39,19 +42,29 @@ public class TicketController {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
     public String index(Authentication auth, Model model,@RequestParam(name="keyword", required=false) String keyword) {
-        List<Ticket> result= null;
-        if(keyword == null || keyword.isBlank()) {
-            result = ticketRepository.findAll();
-        } else {
-            result = ticketRepository.findByTitleContainingIgnoreCase(keyword);
-        }
+        List<Ticket> result;
+        String email = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream()
+                          .anyMatch(a -> a.getAuthority().equals("ADMIN"));
 
-        model.addAttribute("list", result);
-        model.addAttribute("username", auth.getName());
+        if (isAdmin) {
+        result = (keyword == null || keyword.isBlank()) ?
+                ticketRepository.findAll() :
+                ticketRepository.findByTitleContainingIgnoreCase(keyword);
+    } else {
+        result = (keyword == null || keyword.isBlank()) ?
+                ticketRepository.findByOperatorEmail(email) :
+                ticketRepository.findByOperatorEmailAndTitleContainingIgnoreCase(email, keyword);
+    }
 
-        return "tickets/index";
+    model.addAttribute("list", result);
+    model.addAttribute("username", email);
+    return "tickets/index";
     }
 
     @GetMapping("/show/{id}")
@@ -68,22 +81,32 @@ public class TicketController {
 
     @GetMapping("/create")
     public String create(Model model) {
-        model.addAttribute("category<list", categoryRepository.findAll());
+        model.addAttribute("categoryList", categoryRepository.findAll());
+        List<User> operatorList = userRepository.findByRoles_NameAndFlag("OPERATOR", true);
+        model.addAttribute("operatorList", operatorList);
         model.addAttribute("ticket", new Ticket());
         model.addAttribute("editMode", false);
         return "/tickets/create";
     }
     
     @PostMapping("/create")
-    public String save(@Valid @ModelAttribute("Ticket") Ticket formTicket, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+    public String save(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         Optional<Ticket> optTicket = ticketRepository.findByTitle(formTicket.getTitle());
         if(optTicket.isPresent()) {
             bindingResult.addError(new ObjectError("title", "The title already exist"));
         }
 
+        if (formTicket.getCategories() != null) {
+        List<Category> categories = categoryRepository.findAllById(
+            formTicket.getCategories().stream().map(Category::getId).toList()
+        );
+        formTicket.setCategories(categories);
+    }
+
+
         if(bindingResult.hasErrors()) {
             model.addAttribute("categoryList", categoryRepository.findAll());
-            return "redirect:/tickets";
+            return "/tickets/create";
         }
 
         ticketRepository.save(formTicket);
@@ -116,7 +139,7 @@ public class TicketController {
 
         if(bindingResult.hasErrors()) {
             model.addAttribute("categoryList", categoryRepository.findAll());
-            return "/ticket/create";
+            return "/tickets/create";
         }
         
         ticketRepository.save(formTicket);
@@ -126,12 +149,18 @@ public class TicketController {
 
     @PostMapping("/delete/{id}")
     public String delete (@PathVariable("id") Integer id) {
-        Ticket ticket = ticketRepository.findById(id).get();
-        for(Note noteToDelete : ticket.getNotes()) {
+        Optional<Ticket> optTicket = ticketRepository.findById(id);
+
+        if(optTicket.isPresent()){
+            Ticket ticket = optTicket.get();
+
+            for(Note noteToDelete : ticket.getNotes()) {
             noteRepository.delete(noteToDelete);
-        }
+            }
 
         ticketRepository.deleteById(id);
+        }
+
 
         return "redirect:/tickets";
     }

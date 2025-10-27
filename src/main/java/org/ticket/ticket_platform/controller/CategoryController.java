@@ -13,10 +13,8 @@ import org.ticket.ticket_platform.model.Category;
 import org.ticket.ticket_platform.model.Ticket;
 import org.ticket.ticket_platform.repository.CategoryRepository;
 
-import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
 
-@Entity
 @RequestMapping("/categories")
 public class CategoryController {
 
