@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +21,7 @@ public class Note {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
 
-    private LocalDate creationdate= LocalDate.now();
+    private LocalDate creationDate= LocalDate.now();
 
     @NotNull
     private String details;
@@ -53,12 +52,12 @@ public class Note {
         this.id = id;
     }
 
-    public LocalDate getCreationdate() {
-        return creationdate;
+    public LocalDate getCreationDate() {
+        return creationDate;
     }
 
-    public void setCreationdate(LocalDate creationdate) {
-        this.creationdate = creationdate;
+    public void setCreationDate(LocalDate creationdate) {
+        this.creationDate = creationdate;
     }
 
     public String getDetails() {

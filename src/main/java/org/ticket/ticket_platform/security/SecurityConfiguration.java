@@ -15,6 +15,7 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
+        .requestMatchers(HttpMethod.POST, "/tickets/edit/{id}/status").hasAnyAuthority("OPERATOR","ADMIN")
         .requestMatchers("/tickets/create", "/tickets/edit").hasAuthority("ADMIN")
         .requestMatchers(HttpMethod.POST, "/tickets/**").hasAuthority("ADMIN")
         .requestMatchers("/categories", "/categories/**").hasAuthority("ADMIN")

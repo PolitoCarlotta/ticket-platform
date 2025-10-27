@@ -15,21 +15,21 @@
 <nav th:replace="~{fragments/navbar :: navbar('tickets')}"></nav>
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Tickets</h2>
+           <h2>Tickets</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+ 
+        <div class="flex-shrink-0" style="width: 250px;">
+            <form class="input-group" method="get" th:action="@{/tickets}">
+                <input type="text" name="keyword" th:value="${param.keyword}" class="form-control" placeholder="Cerca per titolo">
+                <button class="btn btn-outline-primary" type="submit">Cerca</button>
+            </form>
+        </div>
 
-        <!-- Pulsante "Nuovo Ticket" visibile solo per ADMIN -->
-        <div sec:authorize="hasAuthority('ADMIN')">
-            <a th:href="@{/tickets/create}" class="btn btn-success">+ New Ticket</a>
+        <!-- Pulsante aggiungi nuovo ticket -->
+        <div class="ms-3">
+            <a th:href="@{/tickets/create}" class="btn btn-success" sec:authorize="hasAuthority('ADMIN')">+ Nuovo Ticket</a>
         </div>
     </div>
-
-    <!-- Form di ricerca -->
-    <form class="input-group mb-4" method="get" th:action="@{/tickets}">
-        <input type="text" name="keyword" th:value="${param.keyword}" class="form-control" placeholder="Cerca per titolo">
-        <button class="btn btn-outline-primary" type="submit">Search</button>
-    </form>
-
     <!-- Messaggio di successo (flash attribute) -->
     <div class="row">
         <div class="col-6">
@@ -53,6 +53,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Category</th>
+                    <th>Description</th>
                     <th>Status</th>
                     <th>Operator</th>
                     <th>Created</th>
@@ -68,6 +69,7 @@
                             th:append="${!${catStat.last}} ? ', ' : ''"
                             th:remove="tag"></span>
                     </td>
+                    <td th:text="${ticket.description}"></td>
                     <td>
                         <span th:class="${ticket.status == 'COMPLETED' ? 'badge bg-success' :
                                         (ticket.status == 'IN_PROGRESS' ? 'badge bg-warning' : 'badge bg-secondary')}"
@@ -92,14 +94,6 @@
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
 
-                        <!-- Solo operator può aggiornare lo stato o aggiungere note -->
-                        <a sec:authorize="hasAuthority('OPERATOR')"
-                           th:href="@{/tickets/show/{id}(id=${ticket.id})}#notes"
-                           class="btn btn-sm btn-outline-secondary">Add Note</a>
-
-                        <a sec:authorize="hasAuthority('OPERATOR')"
-                           th:href="@{/tickets/update-status/{id}(id=${ticket.id})}"
-                           class="btn btn-sm btn-outline-info">Update Status</a>
                     </td>
                 </tr>
             </tbody>
