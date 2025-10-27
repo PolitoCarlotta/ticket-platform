@@ -31,6 +31,7 @@ public class Note {
     @JsonBackReference
     private Ticket ticket;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name="user_id")
     private User author;

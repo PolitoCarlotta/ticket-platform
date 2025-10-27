@@ -20,5 +20,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer>{
 
     public List<Ticket> findByOperatorEmailAndTitleContainingIgnoreCase(String email, String keyword);
 
+    public List<Ticket> findByCategories_Id(Integer categoryId);
+
 
 }

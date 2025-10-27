@@ -3,6 +3,8 @@ package org.ticket.ticket_platform.model;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,6 +46,7 @@ public class Ticket {
     @NotNull
     private TicketStatus status = TicketStatus.TO_DO;
 
+    @JsonManagedReference
     @OneToMany(mappedBy= "ticket")
     private List<Note> notes;
 

@@ -5,20 +5,11 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.ticket.ticket_platform.model.GenericPayload;
 import org.ticket.ticket_platform.model.Ticket;
+import org.ticket.ticket_platform.model.TicketStatus;
 import org.ticket.ticket_platform.repository.TicketRepository;
 
 @RestController
@@ -30,51 +21,84 @@ public class TicketRestController {
     private TicketRepository ticketRepository;
 
     @GetMapping
-    public ResponseEntity<List<Ticket>> ticketList(@RequestParam (name="keyword", required=false) String keyword) {
-        List<Ticket> result = null;
+    public ResponseEntity<GenericPayload<List<Ticket>>> ticketList(
+            @RequestParam(name="keyword", required=false) String keyword) {
+
+        List<Ticket> tickets;
         if(keyword != null && keyword.isBlank()) {
-            return new ResponseEntity(result, HttpStatus.BAD_REQUEST);
-        } else if (keyword != null && !keyword.isBlank()) {
-            result = ticketRepository.findByTitleContainingIgnoreCase(keyword);
+            return ResponseEntity.badRequest().body(new GenericPayload<>(null, "Keyword vuota", "BAD_REQUEST"));
+        } else if(keyword != null && !keyword.isBlank()) {
+            tickets = ticketRepository.findByTitleContainingIgnoreCase(keyword);
         } else {
-            result = ticketRepository.findAll();
+            tickets = ticketRepository.findAll();
         }
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new GenericPayload<>(tickets, "", "OK"));
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<GenericPayload<Ticket>> get (@PathVariable("id") Integer id) {
+    public ResponseEntity<GenericPayload<Ticket>> get(@PathVariable Integer id) {
         Optional<Ticket> optTicket = ticketRepository.findById(id);
-
         if(optTicket.isPresent()) {
-            GenericPayload<Ticket> result = new GenericPayload<Ticket>(optTicket.get(), "", HttpStatus.OK.getReasonPhrase());
-
-            return new ResponseEntity<GenericPayload<Ticket>>(result, HttpStatus.OK);
+            return ResponseEntity.ok(new GenericPayload<>(optTicket.get(), "", "OK"));
         } else {
-            GenericPayload<Ticket> result = new GenericPayload<Ticket>(null, "The ticket with " + id + "id doesn't exist", HttpStatus.BAD_REQUEST.getReasonPhrase());
-
-            return new ResponseEntity<GenericPayload<Ticket>>(result, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericPayload<>(null, "Ticket non trovato con id " + id, "NOT_FOUND"));
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Ticket> create(@RequestBody Ticket ticket) {
-        return new ResponseEntity<>(ticketRepository.save(ticket), HttpStatus.CREATED);
+    @PostMapping(consumes = "application/json")
+    public ResponseEntity<GenericPayload<Ticket>> create(@RequestBody Ticket ticket) {
+        Ticket saved = ticketRepository.save(ticket);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GenericPayload<>(saved, "Ticket creato", "CREATED"));
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Ticket> put(@PathVariable("id") Integer id, @RequestBody Ticket ticket) {
+    public ResponseEntity<GenericPayload<Ticket>> update(@PathVariable Integer id, @RequestBody Ticket ticket) {
+        Optional<Ticket> optTicket = ticketRepository.findById(id);
+        if(optTicket.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericPayload<>(null, "Ticket non trovato", "NOT_FOUND"));
+        }
 
-        return new ResponseEntity<>(ticketRepository.save(ticket), HttpStatus.CREATED);
+        Ticket existing = optTicket.get();
+        existing.setTitle(ticket.getTitle());
+        existing.setDescription(ticket.getDescription());
+        existing.setStatus(ticket.getStatus());
+        existing.setOperator(ticket.getOperator());
+        existing.setCategories(ticket.getCategories());
 
+        Ticket saved = ticketRepository.save(existing);
+        return ResponseEntity.ok(new GenericPayload<>(saved, "Ticket aggiornato", "OK"));
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Ticket> delete(@PathVariable("id") Integer id) {
+    public ResponseEntity<GenericPayload<Void>> delete(@PathVariable Integer id) {
+        if (!ticketRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GenericPayload<>(null, "Ticket non trovato", "NOT_FOUND"));
+        }
         ticketRepository.deleteById(id);
-        return new ResponseEntity<>( HttpStatus.OK);
+        return ResponseEntity.ok(new GenericPayload<>(null, "Ticket eliminato", "OK"));
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<GenericPayload<List<Ticket>>> ticketsByCategory(@PathVariable Integer categoryId) {
+        List<Ticket> tickets = ticketRepository.findByCategories_Id(categoryId);
+        return ResponseEntity.ok(new GenericPayload<>(tickets, "", "OK"));
+    }
 
+    @GetMapping("/by-status")
+    public ResponseEntity<List<Ticket>> getTicketsByStatus(@RequestParam String status) {
+        TicketStatus ticketStatus;
+        try {
+            ticketStatus = TicketStatus.valueOf(status); // converte la stringa in enum
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); // status non valido
+        }
+
+        List<Ticket> tickets = ticketRepository.findByStatus(ticketStatus);
+        return ResponseEntity.ok(tickets);
+    }
 }

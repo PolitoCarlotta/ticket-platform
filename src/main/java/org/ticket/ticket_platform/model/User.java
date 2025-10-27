@@ -2,6 +2,8 @@ package org.ticket.ticket_platform.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,6 +43,7 @@ public class User {
     @Column(nullable=false)
     private boolean flag;
   
+    @JsonIgnore
     @OneToMany(mappedBy = "operator", fetch = FetchType.LAZY)
     private List<Ticket> tickets;
 
