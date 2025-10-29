@@ -23,7 +23,7 @@ public class Note {
 
     private LocalDate creationDate= LocalDate.now();
 
-    @NotNull
+    @NotNull (message="La nota non può essere nulla")
     private String details;
 
     @ManyToOne
@@ -33,7 +33,7 @@ public class Note {
 
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_id", nullable=false)
     private User author;
 
 

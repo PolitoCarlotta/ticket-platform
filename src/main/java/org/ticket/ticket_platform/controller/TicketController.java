@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -79,8 +81,7 @@ public class TicketController {
 
     @PostMapping("/edit/{id}/status")
     @PreAuthorize("hasAuthority('OPERATOR')")
-    public String updateTicketStatus(@PathVariable Integer id,
-                                    @RequestParam("status") String status) {
+    public String updateTicketStatus(@PathVariable Integer id,@RequestParam("status") String status) {
         Ticket ticket = ticketRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Ticket non trovato"));
         ticket.setStatus(TicketStatus.valueOf(status));
@@ -98,14 +99,11 @@ public class TicketController {
     }
 
     @PostMapping("/create")
-    public String save(@Valid @ModelAttribute("ticket") Ticket formTicket,
-                       BindingResult bindingResult,
-                       RedirectAttributes redirectAttributes,
-                       Model model) {
+    public String save(@Valid @ModelAttribute("ticket") Ticket formTicket,BindingResult bindingResult,RedirectAttributes    redirectAttributes,Model model) {
 
 
         if (ticketRepository.findByTitle(formTicket.getTitle()).isPresent()) {
-            bindingResult.rejectValue("title", "error.ticket", "Esiste già un ticket con questo titolo");
+            bindingResult.addError(new FieldError("formTicket","title", "Titolo già presente"));
         }
 
         if (bindingResult.hasErrors()) {
@@ -156,10 +154,9 @@ public class TicketController {
 
         // Il titolo non può essere modificato
         if (!existing.getTitle().equals(formTicket.getTitle())) {
-            bindingResult.rejectValue("title", "error.ticket", "Il titolo non può essere modificato");
+            bindingResult.addError(new FieldError("formTicket","title", "Il titolo non può essere modificato"));
         }
 
-        // Se ci sono errori, torna alla form
         if (bindingResult.hasErrors()) {
             model.addAttribute("editMode", true);
             model.addAttribute("categoryList", categoryRepository.findAll());
@@ -198,7 +195,8 @@ public class TicketController {
     @GetMapping("/{id}/note")
     public String note(@PathVariable("id") Integer id, Model model) {
         Note note = new Note();
-        note.setTicket(ticketRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Ticket non trovato")));
+        note.setTicket(ticketRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Ticket non trovato")));
         model.addAttribute("note", note);
         model.addAttribute("editMode", false);
         return "/notes/edit";

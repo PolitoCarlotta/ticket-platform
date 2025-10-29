@@ -56,15 +56,28 @@ public class NoteController {
     }
 
     @PostMapping("/edit")
-    public String editNote(@RequestParam Integer id, @RequestParam String details) {
-        Optional<Note> optionalNote = noteRepository.findById(id);
-        if (optionalNote.isPresent()) {
-            Note note = optionalNote.get();
-            note.setDetails(details); 
-            noteRepository.save(note);
-            return "redirect:/tickets/show/" + note.getTicket().getId();
+    public String editNote(@Valid @ModelAttribute("note") Note noteForm,
+                        BindingResult bindingResult, Model model) {
+
+        Optional<Note> optionalNote = noteRepository.findById(noteForm.getId());
+
+        if (optionalNote.isEmpty()) {
+            return "redirect:/tickets"; 
         }
-        return "redirect:/tickets"; // se non trova la nota
+
+        Note note = optionalNote.get();
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("editMode", true);
+            model.addAttribute("note", noteForm);
+            return "notes/edit"; 
+        }
+
+        note.setDetails(noteForm.getDetails());
+
+        noteRepository.save(note);
+
+        return "redirect:/tickets/show/" + note.getTicket().getId();
     }
 
     @PostMapping("/delete/{id}")

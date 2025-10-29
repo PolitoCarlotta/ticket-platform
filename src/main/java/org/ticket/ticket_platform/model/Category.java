@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name= "categories")
@@ -19,6 +21,8 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotNull(message="La categoria non può essere nulla")
+    @NotBlank(message="La categoria non può essere vuota")
     private String category;
 
     @ManyToMany(mappedBy = "categories")

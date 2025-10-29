@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,11 +45,12 @@ public class CategoryController {
         Category existing = categoryRepository.findByCategory(category.getCategory());
 
         if (existing != null) {
-            bindingResult.addError(new ObjectError("category", "Category already present"));
+            bindingResult.addError(new FieldError("categoryObj","category", "Categoria già esistente"));
         }
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("list", categoryRepository.findAll());
+            model.addAttribute("categoryObj", category);
             return "categories/index";
         }
 
@@ -64,10 +66,9 @@ public class CategoryController {
         if (optCategory.isPresent()) {
             Category cate = optCategory.get();
 
-            // Rimuove la categoria da tutti i ticket associati
             for (Ticket ticket : cate.getTickets()) {
                 ticket.getCategories().remove(cate);
-                ticketRepository.save(ticket); // persiste le modifiche
+                ticketRepository.save(ticket); 
             }
 
             categoryRepository.delete(cate);

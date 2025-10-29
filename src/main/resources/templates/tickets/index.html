@@ -64,10 +64,9 @@
                 <tr th:each="ticket : ${list}">
                     <td th:text="${ticket.title}"></td>
                     <td>
-                        <span th:each="cat : ${ticket.categories}"
-                            th:text="${cat.category}"
-                            th:append="${!${catStat.last}} ? ', ' : ''"
-                            th:remove="tag"></span>
+                        <span th:each="cat, iterStat : ${ticket.categories}">
+                            <span th:text="${cat.category}"></span><span th:if="${!iterStat.last}">, </span>
+                        </span>
                     </td>
                     <td th:text="${ticket.description}"></td>
                     <td>
@@ -91,7 +90,9 @@
                         <form sec:authorize="hasAuthority('ADMIN')"
                               th:action="@{/tickets/delete/{id}(id=${ticket.id})}"
                               method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Do you want delete?')">
+                                Delete
+                            </button>
                         </form>
 
                     </td>

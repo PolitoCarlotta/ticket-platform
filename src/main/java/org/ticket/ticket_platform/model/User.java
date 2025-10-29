@@ -26,18 +26,18 @@ public class User {
     private Integer id;
 
     @Email
-    @NotNull
-    @NotBlank
+    @NotNull(message="L'email è obbligatoria")
+    @NotBlank (message="L'email non può essere vuota")
     @Column(unique=true, nullable=false, updatable=false)
     private String email;
 
-    @NotNull
-    @NotBlank
+    @NotNull (message="La password è obbligatoria")
+    @NotBlank (message="La password non può essere vuota")
     @Column(nullable=false, updatable=false)
     private String password;
 
-    @NotBlank
-    @NotNull
+    @NotBlank (message="Il nome è obbligatorio")
+    @NotNull (message="Il nome non può essere vuoto")
     private String name;
 
     @Column(nullable=false)

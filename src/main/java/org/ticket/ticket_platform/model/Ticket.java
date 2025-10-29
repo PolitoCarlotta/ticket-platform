@@ -30,8 +30,8 @@ public class Ticket {
     private Integer id;
 
 
-    @NotNull
-    @NotBlank
+    @NotNull(message="Il titolo è obbligatorio")
+    @NotBlank(message="Il titolo non può essere vuoto")
     @Column(unique=true)
     private String title;
 
@@ -51,7 +51,7 @@ public class Ticket {
     private List<Note> notes;
 
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_id" ,nullable=false)
     private User operator;
 
     @ManyToMany
