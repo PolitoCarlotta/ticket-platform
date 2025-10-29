@@ -87,7 +87,7 @@
 
                                 <!-- Bottone Elimina -->
                                 <form th:action="@{/notes/delete/{id}(id=${note.id})}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-sm btn-danger">Elimina</button>
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Do you want delete?')">Elimina</button>
                                 </form>
                             </td>
                         </tr>
